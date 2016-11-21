@@ -34,6 +34,8 @@
 #include "main.h"
 #include "stm32f4xx_hal.h"
 
+
+
 /* USER CODE BEGIN Includes */
 	//need to initialize the temperature sensor
 
@@ -73,6 +75,10 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+	init_temp_sensor_trim();
+	//need to define init_value look at temp.c
+	init_temp_sensor_16bit(init_value);
+	//call temperature sensor initialization function
 
   /* USER CODE END 1 */
 
@@ -95,17 +101,28 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  int temp_flag = 0;
+  int speed_flag = 0;
+  int pot_flag = 0;
   while (1)
   {
   /* USER CODE END WHILE */
-	  //knowing the oscillations can get time
+	  //need to get time......
+
 
 	  //if a multiple of this amount of time do temperature sensor
-
+	  //want this done every 10th of a second
+	  temp_flag = temp_main();
 	  //if a multiple of this amount of time do wheel speed sensor
-
+	  //every 10th of a second
+	  speed_flag = Wheel_Speed_main();
 	  //if a multiple of this amount of time do potentiometer
+	  pot_flag = pot_main();
 
+	  //error checking
+	  //check the flags for these functions
+
+	  //system pause
   /* USER CODE BEGIN 3 */
 
   }
