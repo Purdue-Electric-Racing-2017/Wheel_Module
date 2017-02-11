@@ -1,4 +1,6 @@
 #include "stm32f4xx_hal.h"
+//#define RADS_BETWEEN 22*0.28559933214452665804205848938905;  //check this -- value might change once discover specifics
+#define radius 0.2
 typedef struct{
 
 	TIM_HandleTypeDef * htim;
@@ -33,7 +35,11 @@ void HAL_TIM_IC_CaptureCallback (TIM_HandleTypeDef * htim){
 			__HAL_TIM_SetCounter(ws.htim, 0);	//reset counter after input capture interrupt occurs
 		}
 }
-long getSpeed(){
+long getSpeedTime(){
+
 	return input_capture_time;
+}
+long getSpeed(){
+	return (1*radians*2*(3.1415926535)) / input_capture_time;	//units are in rads per second
 }
 
