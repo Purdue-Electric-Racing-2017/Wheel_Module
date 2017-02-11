@@ -1,12 +1,12 @@
 #include "stm32f4xx_hal.h"
 //#define RADS_BETWEEN 22*0.28559933214452665804205848938905;  //check this -- value might change once discover specifics
-#define radius 0.2
+//#define radius 0.2;
 typedef struct{
 
 	TIM_HandleTypeDef * htim;
 	uint32_t channel;
 	TIM_IC_InitTypeDef * sConfig;
-	TIM2;
+
 
 }wheelspeed_t;
 long input_capture_time=0;
