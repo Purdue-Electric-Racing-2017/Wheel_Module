@@ -143,7 +143,7 @@
           using macro __HAL_RCC_ADC_FORCE_RESET(), __HAL_RCC_ADC_RELEASE_RESET().
      (++) ADC clock disable using the equivalent macro/functions as configuration step.
                (+++) Example:
-                   Into HAL_ADC_MspDeInit() (recommended code location) or with
+                   Into HAL_ADC_MspDeInit() (recommended code location) or withL_TIM_IC_ConfigChannel()
                    other device clock parameters configuration:
                (+++) HAL_RCC_GetOscConfig(&RCC_OscInitStructure);
                (+++) RCC_OscInitStructure.OscillatorType = RCC_OSCILLATORTYPE_HSI;
