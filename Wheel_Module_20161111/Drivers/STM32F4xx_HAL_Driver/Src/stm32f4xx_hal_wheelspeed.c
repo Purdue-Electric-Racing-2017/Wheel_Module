@@ -4,6 +4,7 @@ typedef struct{
 	TIM_HandleTypeDef * htim;
 	uint32_t channel;
 	TIM_IC_InitTypeDef * sConfig;
+	TIM2;
 
 }wheelspeed_t;
 long input_capture_time=0;
@@ -27,7 +28,7 @@ void calcSpeed(wheelspeed_t wheelspeed_t){
 	}
 }
 void HAL_TIM_IC_CaptureCallback (TIM_HandleTypeDef * htim){
-	if (ws.htim->Instance==TIM2){ //not sure what this line does
+	if (ws.htim->Instance==htim->Instance){ //not sure what this line does
 			input_capture_time= __HAL_TIM_GetCompare(ws.htim, ws.channel);	//read TIM2 channel 1 capture value
 			__HAL_TIM_SetCounter(ws.htim, 0);	//reset counter after input capture interrupt occurs
 		}
