@@ -1,4 +1,5 @@
 #include "stm32f4xx_hal.h"
+
 //#define RADS_BETWEEN 22*0.28559933214452665804205848938905;  //check this -- value might change once discover specifics
 //#define radius 0.2;
 typedef struct{
@@ -22,7 +23,8 @@ void initWheelSpeed(wheelspeed_t wheelspeed_t){
 	HAL_TIM_IC_Start_IT(wheelspeed_t.htim,wheelspeed_t.channel);
 }
 void deInitWheelSpeed(){
-
+	free(ws);
+	free(wheelspeed_t);
 }
 void calcSpeed(wheelspeed_t wheelspeed_t){
 	while(1){
@@ -33,13 +35,13 @@ void HAL_TIM_IC_CaptureCallback (TIM_HandleTypeDef * htim){
 	if (ws.htim->Instance==htim->Instance){ //not sure what this line does
 			input_capture_time= __HAL_TIM_GetCompare(ws.htim, ws.channel);	//read TIM2 channel 1 capture value
 			__HAL_TIM_SetCounter(ws.htim, 0);	//reset counter after input capture interrupt occurs
+			count =0;
 		}
 }
 long getSpeedTime(){
-
 	return input_capture_time;
 }
 long getSpeed(){
-	return (1*radians*2*(3.1415926535)) / input_capture_time;	//units are in rads per second
+	return (1*/*(radians)*/*2*/*(pi)s*/) / input_capture_time;	//units are in rads per second
 }
 
