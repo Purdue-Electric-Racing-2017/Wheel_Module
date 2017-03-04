@@ -1,4 +1,6 @@
-#include "stm32f4xx_hal.h"
+#include "math.h"
+//#include "stm32f4xx_hal.h"
+
 
 //#define RADS_BETWEEN 22*0.28559933214452665804205848938905;  //check this -- value might change once discover specifics
 //#define radius 0.2;
@@ -101,4 +103,7 @@ void getSpeed(long count){
 	}
 	
 }
+
+//#include "stm32f4xx_hal.h"
+
 
