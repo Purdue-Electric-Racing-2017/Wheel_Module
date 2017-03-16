@@ -36,6 +36,7 @@
 
 /* USER CODE BEGIN Includes */
 #include "temperature_sensor.h"
+
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/

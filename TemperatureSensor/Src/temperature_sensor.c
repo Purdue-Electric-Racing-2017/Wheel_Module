@@ -43,6 +43,7 @@
 
 extern I2C_HandleTypeDef hi2c_t;
 extern WheelModule_t gWheelData;
+uint8_t gEEPROM[256];
 uint8_t gpData_PTAT_Request[4];
 uint16_t gPTAT;
 uint8_t gpData_IR_Request[4];
@@ -57,6 +58,8 @@ int gA_i[64];
 int gB_i[64];
 int gTGC;
 int gEmissivity;
+int gA_cp;
+int gB_cp;
 int gKsta;
 int gAlpha[64];
 int gAlpha_cp;
@@ -175,9 +178,8 @@ static HAL_StatusTypeDef temperatureSensorEEPROMDataProcessing()
 
 
   //EEPROM Dump Request
-  uint8_t * pData_EEPROM_Dump_Request;
-  *pData_EEPROM_Dump_Request = 0x00;
-  if(HAL_OK != HAL_I2C_Mem_Write(&hi2c_t, EEPROM_SLAVE_ADDRESS, EEPROM_INITIAL_DATA_ADDRESS, I2C_MEMADD_SIZE_8BIT, pData_EEPROM_Dump_Request, 0, TIMEOUT_DURATION))
+  uint8_t pData_EEPROM_Dump_Request = 0x00;
+  if(HAL_OK != HAL_I2C_Mem_Write(&hi2c_t, EEPROM_SLAVE_ADDRESS, EEPROM_INITIAL_DATA_ADDRESS, I2C_MEMADD_SIZE_8BIT, &pData_EEPROM_Dump_Request, 0, TIMEOUT_DURATION))
   {
     //ERROR HANDLING
 	return_status = HAL_ERROR;
@@ -185,7 +187,7 @@ static HAL_StatusTypeDef temperatureSensorEEPROMDataProcessing()
 
 
   //EEPROM Dump Receive
-  if(HAL_OK != HAL_I2C_Mem_Read(&hi2c_t, EEPROM_SLAVE_ADDRESS, EEPROM_INITIAL_DATA_ADDRESS, I2C_MEMADD_SIZE_8BIT, gEEPROM, sizeof(gEEPROM)))
+  if(HAL_OK != HAL_I2C_Mem_Read(&hi2c_t, EEPROM_SLAVE_ADDRESS, EEPROM_INITIAL_DATA_ADDRESS, I2C_MEMADD_SIZE_8BIT, gEEPROM, sizeof(gEEPROM), TIMEOUT_DURATION))
   {
     //ERROR HANDLING
 	return_status = HAL_ERROR;
@@ -219,6 +221,15 @@ static HAL_StatusTypeDef temperatureSensorEEPROMDataProcessing()
 *	   3. gV_th_25
 *	   4. gK_t1
 *	   5. gK_t2
+*	   6. gA_i
+*	   7. gB_i
+*	   8. gTGC
+*	   9. gEmissivity
+*	   10.gA_cp
+*	   11.gB_cp
+*	   12.gKsta
+*	   13.gAlpha
+*	   14.gAlpha_cp
 *
 *     Function Description:
 *     Saves EEPROM constants to global variables for ease of access while preforming
@@ -283,7 +294,6 @@ static void temperatureSensorInitEEPROMConstants()
   }
   //delta_A_i
   int delta_A_i[64];
-  int B_i[64];
   int Ai_loop_control;
   for(Ai_loop_control = 0; Ai_loop_control < 64; Ai_loop_control++)
   {
@@ -335,6 +345,24 @@ static void temperatureSensorInitEEPROMConstants()
   gEmissivity = (256 * emissivity_h + emissivity_l) / 32768;
 
 
+  /* --------- gA_cp --------- */
+  gA_cp = 256 * gEEPROM[0xD4] + gEEPROM[0xD3];
+  if(gA_cp > 32768)
+  {
+    gA_cp -= 65536;
+  }
+  gA_cp = gA_cp / pow(2, 3 - gConfig_Reg_54);
+
+
+  /* --------- gB_cp --------- */
+  gB_cp = gEEPROM[0xD5];
+  if(gB_cp > 127)
+  {
+    gB_cp -= 256;
+  }
+  gB_cp = gB_cp / (pow(2, B_i_scale) * pow(2, 3 - gConfig_Reg_54));
+
+
   /* --------- gKsta --------- */
   gKsta = (256 * gEEPROM[0xE7] + gEEPROM[0xE6]) / pow(2, 20);
 
@@ -383,6 +411,8 @@ static HAL_StatusTypeDef temperatureSensorWriteOscillatorTrimValue()
   pData_Write_Oscillator_Trim_Value[0] = 0x04;						//command
   pData_Write_Oscillator_Trim_Value[1] = gEEPROM[0xF7] - 0xAA;  	//LSB Check
   pData_Write_Oscillator_Trim_Value[2] = gEEPROM[0xF7];				//LSB
+  //NOTE: 	the line below generates an warning, but after testing and comparing to the example
+  //		given in the MLX90621 data-sheet, page 10, its output will match the intended output.
   pData_Write_Oscillator_Trim_Value[3] = 0x00 - 0xAA;				//MSB Check
   pData_Write_Oscillator_Trim_Value[4] = 0x00;						//MSB
   if(HAL_OK != HAL_I2C_Mem_Write(&hi2c_t, MLX_MCU_SLAVE_ADDRESS, OSCILLATOR_TRIM_VALUE_START_ADDRESS, I2C_MEMADD_SIZE_16BIT, pData_Write_Oscillator_Trim_Value, 5, TIMEOUT_DURATION))
@@ -671,10 +701,7 @@ static HAL_StatusTypeDef temperatureSensorCompensationPixelDataHandler()
 *       1.  NONE
 *
 *      Global Dependents:
-*	   1. uint16_t gPTAT
-*	   2. uint16_t gCompensation_Pixel
-*	   3. uint16_t gIR[64]
-*	   4. WheelModule_t gWheelData
+*	   1. NONE
 *
 *     Function Description:
 *     Calculates each pixel's respective perceived temperature
@@ -714,7 +741,7 @@ static void temperatureSensorTempCalc()
 ***************************************************************************/
 static float temperatureSensorTaCalc()
 {
-  return ((-gK_t1 + pow(pow(gK_t2, 2) - 4 * (gV_th_25 - gPTAT))) / (2 * gK_t2) + 25);
+  return ((-gK_t1 + pow(pow(gK_t2, 2) - 4 * (gV_th_25 - gPTAT), 0.5)) / (2 * gK_t2) + 25);
 }
 
 
@@ -741,6 +768,8 @@ static float temperatureSensorTaCalc()
 *	   7. gKsta
 *	   8. gAlpha
 *	   9. gAlpha_cp
+*	   10.gA_cp
+*	   11.gB_cp
 *
 *     Function Description:
 *     Calculates the To(the temperature seen by each specific pixel).  The calculations
@@ -762,12 +791,13 @@ static void temperatureSensorToCalc(float Ta)
   int v_ir_tgc_comp[64];
   int v_ir_comp[64];
   int Ta0 = 25;
+  int v_ir_cp_offset_comp = gCompensation_Pixel - (gA_cp + gB_cp * (Ta - Ta0));
   int v_ir_comp_loop_control;
   for(v_ir_comp_loop_control = 0; v_ir_comp_loop_control < 64; v_ir_comp_loop_control++)
   {
-    v_ir_offset_comp[v_ir_comp_loop_control] = gIR[v_ir_comp_loop_control] - (gA_i  + gB_i * (Ta - Ta0));
-    v_ir_tgc_comp[v_ir_comp_loop_control] = v_ir_offset_comp[v_ir_comp_loop_control] - gTGC * gCompensation_Pixel;
-    v_ir_comp[v_ir_comp_loop_control] = v_ir_tgc_comp / gEmissivity;
+    v_ir_offset_comp[v_ir_comp_loop_control] = gIR[v_ir_comp_loop_control] - (gA_i[v_ir_comp_loop_control]  + gB_i[v_ir_comp_loop_control] * (Ta - Ta0));
+    v_ir_tgc_comp[v_ir_comp_loop_control] = v_ir_offset_comp[v_ir_comp_loop_control] - gTGC * v_ir_cp_offset_comp;
+    v_ir_comp[v_ir_comp_loop_control] = v_ir_tgc_comp[v_ir_comp_loop_control] / gEmissivity;
   }
 
 
