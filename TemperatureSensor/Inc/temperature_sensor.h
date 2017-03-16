@@ -1,8 +1,10 @@
 #ifndef TEMPERATURE_SENSOR_H_
 #define TEMPERATURE_SENSOR_H_
 
+#include <stdio.h>
 #include <math.h>
-
+#include "main.h"
+#include "stm32f4xx_hal.h"
 
 
 HAL_StatusTypeDef temperatureSensorInitialize();
