@@ -1,7 +1,7 @@
 [PreviousGenFiles]
-HeaderPath=C:/Users/William/Documents/PER/CUBEMX/Wheel_Module/Inc
+HeaderPath=C:/Users/William/Documents/GitHub/Wheel_Module/Wheel_Module/Inc
 HeaderFiles=FreeRTOSConfig.h;stm32f4xx_it.h;stm32f4xx_hal_conf.h;main.h;
-SourcePath=C:/Users/William/Documents/PER/CUBEMX/Wheel_Module/Src
+SourcePath=C:/Users/William/Documents/GitHub/Wheel_Module/Wheel_Module/Src
 SourceFiles=FreeRTOSConfig.h;stm32f4xx_it.h;stm32f4xx_hal_conf.h;main.h;freertos.c;stm32f4xx_it.c;stm32f4xx_hal_msp.c;stm32f4xx_hal_timebase_TIM.c;main.c;
 
 [PreviousLibFiles]

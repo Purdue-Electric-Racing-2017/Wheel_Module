@@ -79,8 +79,8 @@ double speed;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_CAN1_Init(void);
 static void MX_TIM1_Init(void);
+static void MX_CAN1_Init(void);
 void StartDefaultTask(void const * argument);
                                     
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
@@ -165,8 +165,8 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_CAN1_Init();
   MX_TIM1_Init();
+  MX_CAN1_Init();
 
   /* USER CODE BEGIN 2 */
 
@@ -276,13 +276,13 @@ static void MX_CAN1_Init(void)
 {
 
   hcan1.Instance = CAN1;
-  hcan1.Init.Prescaler = 4;
+  hcan1.Init.Prescaler = 16;
   hcan1.Init.Mode = CAN_MODE_NORMAL;
-  hcan1.Init.SJW = CAN_SJW_2TQ;
-  hcan1.Init.BS1 = CAN_BS1_7TQ;
-  hcan1.Init.BS2 = CAN_BS2_8TQ;
+  hcan1.Init.SJW = CAN_SJW_1TQ;
+  hcan1.Init.BS1 = CAN_BS1_1TQ;
+  hcan1.Init.BS2 = CAN_BS2_1TQ;
   hcan1.Init.TTCM = DISABLE;
-  hcan1.Init.ABOM = ENABLE;
+  hcan1.Init.ABOM = DISABLE;
   hcan1.Init.AWUM = DISABLE;
   hcan1.Init.NART = DISABLE;
   hcan1.Init.RFLM = DISABLE;
@@ -375,6 +375,7 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOE_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin : Wheel_Speed_Pin */
   GPIO_InitStruct.Pin = Wheel_Speed_Pin;
